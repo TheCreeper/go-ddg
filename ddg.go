@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"net/url"
 )
@@ -26,9 +25,7 @@ const (
 )
 
 type Client struct {
-	Dial   func(network, addr string) (net.Conn, error) // Dialer to use
-	UrlApi string                                       // Url to duckduckgo api
-
+	UrlApi    string // Url to duckduckgo api
 	UserAgent string // Useragent used in requests
 
 	Pretty             bool // Return pritty json
@@ -39,21 +36,6 @@ type Client struct {
 func NewClient() *Client {
 
 	return new(Client)
-}
-
-func (c *Client) dial(network, addr string) (net.Conn, error) {
-
-	if c.Dial != nil {
-
-		return c.Dial(network, addr)
-	}
-
-	dialer := &net.Dialer{
-
-		DualStack: true,
-	}
-
-	return dialer.Dial(network, addr)
 }
 
 type Result struct {
@@ -121,13 +103,13 @@ func (c *Client) Query(searchquery string) (r Result, err error) {
 		boi(c.NoHTML),
 		boi(c.SkipDisambiguation))
 
-	httpClient := &http.Client{Transport: &http.Transport{Dial: c.dial}}
+	httpClient := &http.Client{}
 	req, err := http.NewRequest("GET", urlF, nil)
 	if err != nil {
 
 		return
 	}
-	if len(c.UserAgent) > 1 {
+	if len(c.UserAgent) != 0 {
 
 		req.Header.Add("User-Agent", c.UserAgent)
 	}
